@@ -1,0 +1,19 @@
+{% comment %}Expects: book{% endcomment %}
+<li class="book-card">
+  <a class="card-link" href="{{ book.get_absolute_url }}">
+    <div class="book-card-cover cover-{{ book.category.slug|default:'default' }}">
+      <span class="cover-initial" aria-hidden="true">{{ book.title|slice:":1" }}</span>
+    </div>
+    <div class="book-card-body">
+      <h3>{{ book.title }}</h3>
+      {% if book.subtitle %}<p class="subtitle">{{ book.subtitle }}</p>{% endif %}
+      <p class="meta">
+        {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}Unknown author{% endfor %}
+      </p>
+      <div class="card-footer">
+        <span class="category-pill">{{ book.category.name }}</span>
+        {% if book.is_featured %}<span class="badge">Featured</span>{% endif %}
+      </div>
+    </div>
+  </a>
+</li>

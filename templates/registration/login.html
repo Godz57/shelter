@@ -3,20 +3,25 @@
 {% block title %}Log in{% endblock %}
 
 {% block content %}
-<h1>Log in</h1>
+<div class="auth-panel">
+  <header class="page-header">
+    <h1>Log in</h1>
+    <p class="lede">Welcome back — open your shelf anytime.</p>
+  </header>
 
-<form class="auth-form" method="post" action="{% url 'login' %}">
-  {% csrf_token %}
-  {{ form.non_field_errors }}
-  {% for field in form %}
-    <label>
-      {{ field.label }}
-      {{ field }}
-      {% if field.errors %}<span class="field-error">{{ field.errors|striptags }}</span>{% endif %}
-    </label>
-  {% endfor %}
-  <input type="hidden" name="next" value="{{ next }}">
-  <button type="submit" class="btn">Log in</button>
-</form>
-<p class="hint">No account yet? <a href="{% url 'catalog:signup' %}">Sign up</a>.</p>
+  <form class="auth-form" method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <label>
+        {{ field.label }}
+        {{ field }}
+        {% if field.errors %}<span class="field-error">{{ field.errors|striptags }}</span>{% endif %}
+      </label>
+    {% endfor %}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit" class="btn">Log in</button>
+  </form>
+  <p class="hint" style="text-align:center;">No account yet? <a href="{% url 'catalog:signup' %}">Sign up</a>.</p>
+</div>
 {% endblock %}

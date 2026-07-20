@@ -3,7 +3,10 @@
 {% block title %}Books{% endblock %}
 
 {% block content %}
-<h1>Books</h1>
+<header class="page-header">
+  <h1>Books</h1>
+  <p class="lede">Search the catalog, filter by category, and open any title for details.</p>
+</header>
 
 <form class="filters" method="get" action="{% url 'catalog:book_list' %}">
   <label>
@@ -36,16 +39,7 @@
 {% if page_obj.object_list %}
   <ul class="book-grid">
     {% for book in page_obj %}
-      <li class="book-card">
-        <a href="{{ book.get_absolute_url }}">
-          <h2>{{ book.title }}</h2>
-          {% if book.subtitle %}<p class="subtitle">{{ book.subtitle }}</p>{% endif %}
-          <p class="meta">
-            {{ book.category.name }} ·
-            {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}Unknown{% endfor %}
-          </p>
-        </a>
-      </li>
+      {% include "catalog/_book_card.html" with book=book %}
     {% endfor %}
   </ul>
 

@@ -4,53 +4,75 @@
 
 {% block content %}
 <section class="hero">
-  <h1>A quiet shelf of gospel-centered books</h1>
-  <p class="lede">
-    Browse a sample publishing catalog built with Django:
-    models, admin, search, accounts, and a small JSON API.
-  </p>
-  <p>
-    <a class="btn" href="{% url 'catalog:book_list' %}">Browse books</a>
-  </p>
+  <div class="hero-inner">
+    <p class="hero-kicker">Gospel publishing catalog</p>
+    <h1>A quiet shelf of gospel-centered books</h1>
+    <p class="lede">
+      Browse a sample publishing catalog built with Django —
+      models, admin, search, accounts, and a small JSON API.
+    </p>
+    <div class="hero-actions">
+      <a class="btn" href="{% url 'catalog:book_list' %}">Browse books</a>
+      <a class="btn btn-ghost" href="{% url 'catalog:signup' %}">Create account</a>
+    </div>
+  </div>
+  <div class="hero-orbs" aria-hidden="true">
+    <div class="orb">G</div>
+    <div class="orb">T</div>
+    <div class="orb">M</div>
+    <div class="orb">S</div>
+  </div>
 </section>
 
-<section>
-  <h2>Featured</h2>
-  {% if featured_books %}
-    <ul class="book-grid">
-      {% for book in featured_books %}
-        <li class="book-card">
-          <a href="{{ book.get_absolute_url }}">
-            <h3>{{ book.title }}</h3>
-            <p class="meta">
-              {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}Unknown author{% endfor %}
-            </p>
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="empty">No featured books yet. Run <code>python manage.py seed_catalog</code>.</p>
-  {% endif %}
-</section>
+<div class="home-layout">
+  <div>
+    <div class="section-head">
+      <h2>Featured</h2>
+      <a href="{% url 'catalog:book_list' %}">View all →</a>
+    </div>
+    {% if featured_books %}
+      <ul class="book-grid">
+        {% for book in featured_books %}
+          {% include "catalog/_book_card.html" with book=book %}
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No featured books yet. Run <code>python manage.py seed_catalog</code>.</p>
+    {% endif %}
 
-<section>
-  <h2>Recently added</h2>
-  {% if recent_books %}
-    <ul class="book-grid">
-      {% for book in recent_books %}
-        <li class="book-card">
-          <a href="{{ book.get_absolute_url }}">
-            <h3>{{ book.title }}</h3>
-            <p class="meta">
-              {% for author in book.authors.all %}{{ author.name }}{% if not forloop.last %}, {% endif %}{% empty %}Unknown author{% endfor %}
-            </p>
-          </a>
-        </li>
-      {% endfor %}
+    <div class="section-head">
+      <h2>Recently added</h2>
+    </div>
+    {% if recent_books %}
+      <ul class="book-grid">
+        {% for book in recent_books %}
+          {% include "catalog/_book_card.html" with book=book %}
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No books yet.</p>
+    {% endif %}
+  </div>
+
+  <aside class="side-panel">
+    <h2>Explore</h2>
+    <p>Filter the catalog by theme — the same patterns used in content-heavy publishing sites.</p>
+    <ul class="chip-list">
+      <li><a href="{% url 'catalog:book_list' %}?category=theology">Theology</a></li>
+      <li><a href="{% url 'catalog:book_list' %}?category=devotional">Devotional</a></li>
+      <li><a href="{% url 'catalog:book_list' %}?category=biography">Biography</a></li>
+      <li><a href="{% url 'catalog:book_list' %}?category=church">Church Life</a></li>
     </ul>
-  {% else %}
-    <p class="empty">No books yet.</p>
-  {% endif %}
-</section>
+
+    <div class="side-cta">
+      <h3>My Shelf</h3>
+      <p>Sign in to save books you want to read.</p>
+      {% if user.is_authenticated %}
+        <a class="btn" href="{% url 'catalog:my_shelf' %}">Open my shelf</a>
+      {% else %}
+        <a class="btn" href="{% url 'catalog:signup' %}">Sign up free</a>
+      {% endif %}
+    </div>
+  </aside>
+</div>
 {% endblock %}

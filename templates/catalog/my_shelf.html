@@ -3,22 +3,34 @@
 {% block title %}My Shelf{% endblock %}
 
 {% block content %}
-<h1>My Shelf</h1>
-<p class="lede">Books you want to read, saved to your account.</p>
+<header class="page-header">
+  <h1>My Shelf</h1>
+  <p class="lede">Books you want to read, saved to your account.</p>
+</header>
 
 {% if items %}
   <ul class="book-grid">
     {% for item in items %}
       <li class="book-card">
-        <a href="{{ item.book.get_absolute_url }}">
-          <h2>{{ item.book.title }}</h2>
-          <p class="meta">{{ item.book.category.name }} · added {{ item.created_at|date:"M j, Y" }}</p>
+        <a class="card-link" href="{{ item.book.get_absolute_url }}">
+          <div class="book-card-cover cover-{{ item.book.category.slug|default:'default' }}">
+            <span class="cover-initial" aria-hidden="true">{{ item.book.title|slice:":1" }}</span>
+          </div>
+          <div class="book-card-body">
+            <h2>{{ item.book.title }}</h2>
+            <p class="meta">{{ item.book.category.name }} · added {{ item.created_at|date:"M j, Y" }}</p>
+            <div class="card-footer">
+              <span class="category-pill">{{ item.book.category.name }}</span>
+            </div>
+          </div>
         </a>
-        <form method="post" action="{% url 'catalog:shelf_remove' item.book.id %}">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{% url 'catalog:my_shelf' %}">
-          <button type="submit" class="link-button">Remove</button>
-        </form>
+        <div style="padding: 0 1.15rem 1rem;">
+          <form method="post" action="{% url 'catalog:shelf_remove' item.book.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'catalog:my_shelf' %}">
+            <button type="submit" class="link-button">Remove</button>
+          </form>
+        </div>
       </li>
     {% endfor %}
   </ul>

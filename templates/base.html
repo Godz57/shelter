@@ -5,12 +5,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Shelf{% endblock %} · Gospel Publishing Catalog</title>
+  <meta name="description" content="Shelf — a Django portfolio catalog of gospel-centered books with search, accounts, and a JSON API.">
   <link rel="stylesheet" href="{% static 'css/site.css' %}">
 </head>
 <body>
   <header class="site-header">
     <div class="container header-inner">
-      <a class="brand" href="{% url 'catalog:home' %}">Shelf</a>
+      <a class="brand" href="{% url 'catalog:home' %}">Shelf<span>.</span></a>
       <nav class="nav" aria-label="Main">
         <a href="{% url 'catalog:home' %}">Home</a>
         <a href="{% url 'catalog:book_list' %}">Books</a>
@@ -18,7 +19,7 @@
           <a href="{% url 'catalog:my_shelf' %}">My Shelf</a>
           <form class="inline-form" method="post" action="{% url 'logout' %}">
             {% csrf_token %}
-            <button type="submit" class="link-button">Log out ({{ user.username }})</button>
+            <button type="submit" class="link-button">Log out</button>
           </form>
         {% else %}
           <a href="{% url 'login' %}">Log in</a>
@@ -40,9 +41,15 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container">
-      <p>Shelf is a portfolio Django catalog app with fictional titles. Not affiliated with any publisher.</p>
-      <p><a href="/api/books/">JSON API</a> · <a href="/admin/">Admin</a></p>
+    <div class="container footer-inner">
+      <div>
+        <p class="footer-brand">Shelf.</p>
+        <p>Portfolio Django catalog · fictional titles only.</p>
+      </div>
+      <div>
+        <p><a href="/api/books/">JSON API</a> · <a href="/admin/">Admin</a> · <a href="{% url 'catalog:book_list' %}">Browse</a></p>
+        <p>Not affiliated with any publisher.</p>
+      </div>
     </div>
   </footer>
 </body>

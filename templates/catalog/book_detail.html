@@ -9,40 +9,54 @@
     <a href="{% url 'catalog:book_list' %}?category={{ book.category.slug }}">{{ book.category.name }}</a>
   </p>
 
-  <h1>{{ book.title }}</h1>
-  {% if book.subtitle %}<p class="subtitle">{{ book.subtitle }}</p>{% endif %}
+  <div class="detail-layout">
+    <div class="detail-cover cover-{{ book.category.slug|default:'default' }}" aria-hidden="true">
+      <span class="cover-initial">{{ book.title|slice:":1" }}</span>
+    </div>
 
-  <p class="meta">
-    {% if book.is_featured %}<span class="badge">Featured</span>{% endif %}
-    {% for author in book.authors.all %}
-      <a href="{{ author.get_absolute_url }}">{{ author.name }}</a>{% if not forloop.last %}, {% endif %}
-    {% empty %}
-      Unknown author
-    {% endfor %}
-    {% if book.published_date %} · {{ book.published_date|date:"Y" }}{% endif %}
-    {% if book.isbn %} · ISBN {{ book.isbn }}{% endif %}
-  </p>
+    <div>
+      <h1>{{ book.title }}</h1>
+      {% if book.subtitle %}<p class="subtitle">{{ book.subtitle }}</p>{% endif %}
 
-  <div class="description">
-    {{ book.description|linebreaks }}
+      <p class="meta">
+        {% if book.is_featured %}<span class="badge">Featured</span>{% endif %}
+        <span class="category-pill">{{ book.category.name }}</span>
+        ·
+        {% for author in book.authors.all %}
+          <a href="{{ author.get_absolute_url }}">{{ author.name }}</a>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+          Unknown author
+        {% endfor %}
+        {% if book.published_date %} · {{ book.published_date|date:"Y" }}{% endif %}
+        {% if book.isbn %} · ISBN {{ book.isbn }}{% endif %}
+      </p>
+
+      <div class="description">
+        {{ book.description|linebreaks }}
+      </div>
+
+      <div class="detail-actions">
+        {% if user.is_authenticated %}
+          {% if on_shelf %}
+            <form method="post" action="{% url 'catalog:shelf_remove' book.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <button type="submit" class="btn btn-secondary">Remove from My Shelf</button>
+            </form>
+          {% else %}
+            <form method="post" action="{% url 'catalog:shelf_add' book.id %}">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}">
+              <button type="submit" class="btn">Add to My Shelf</button>
+            </form>
+          {% endif %}
+        {% else %}
+          <a class="btn" href="{% url 'login' %}">Log in to save</a>
+          <a class="btn btn-outline" href="{% url 'catalog:signup' %}">Sign up</a>
+        {% endif %}
+        <a class="btn btn-outline" href="{% url 'catalog:book_list' %}">Back to catalog</a>
+      </div>
+    </div>
   </div>
-
-  {% if user.is_authenticated %}
-    {% if on_shelf %}
-      <form method="post" action="{% url 'catalog:shelf_remove' book.id %}">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.path }}">
-        <button type="submit" class="btn btn-secondary">Remove from My Shelf</button>
-      </form>
-    {% else %}
-      <form method="post" action="{% url 'catalog:shelf_add' book.id %}">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.path }}">
-        <button type="submit" class="btn">Add to My Shelf</button>
-      </form>
-    {% endif %}
-  {% else %}
-    <p class="hint"><a href="{% url 'login' %}">Log in</a> to save this book to your shelf.</p>
-  {% endif %}
 </article>
 {% endblock %}
