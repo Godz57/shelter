@@ -17,9 +17,6 @@
         <a href="{% url 'catalog:book_list' %}">Books</a>
         {% if user.is_authenticated %}
           <a href="{% url 'catalog:my_shelf' %}">Your Shelter</a>
-          {% if user.is_staff %}
-            <a class="nav-manage" href="{% url 'staff:dashboard' %}">Manage</a>
-          {% endif %}
           <form class="inline-form" method="post" action="{% url 'logout' %}">
             {% csrf_token %}
             <button type="submit" class="link-button">Log out</button>
@@ -53,7 +50,6 @@
         <p>
           <a href="{% url 'catalog:book_list' %}">Browse</a>
           · <a href="/api/books/">JSON API</a>
-          {% if user.is_staff %} · <a href="{% url 'staff:dashboard' %}">Manage</a>{% endif %}
         </p>
         <p>Not affiliated with any publisher.</p>
       </div>

@@ -78,11 +78,27 @@ class StaffPanelTests(TestCase):
         self.assertEqual(res.status_code, 302)
         self.assertFalse(Book.objects.filter(pk=self.book.pk).exists())
 
-    def test_manage_nav_on_public_site_for_staff(self):
+    def test_no_manage_button_on_public_site(self):
         self.client.login(username="admin", password="admin")
         res = self.client.get(reverse("catalog:home"))
-        self.assertContains(res, reverse("staff:dashboard"))
-        self.assertContains(res, "Manage")
+        self.assertNotContains(res, "nav-manage")
+        self.assertNotContains(res, ">Manage<")
+
+    def test_staff_login_goes_to_manage_panel(self):
+        res = self.client.post(
+            reverse("login"),
+            {"username": "admin", "password": "admin"},
+        )
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, reverse("staff:dashboard"))
+
+    def test_reader_login_goes_to_public_site(self):
+        res = self.client.post(
+            reverse("login"),
+            {"username": "reader", "password": "complex-pass-123"},
+        )
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, reverse("catalog:home"))
 
     def test_old_admin_root_redirects_to_manage(self):
         res = self.client.get("/admin/")

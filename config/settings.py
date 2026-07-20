@@ -106,11 +106,9 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LOGIN_REDIRECT_URL = "catalog:home"
+LOGIN_REDIRECT_URL = "catalog:home"  # fallback; staff handled in ShelterLoginView
 LOGOUT_REDIRECT_URL = "catalog:home"
 LOGIN_URL = "login"
-
-# After login, staff can open /manage/ from the header "Manage" link.
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
