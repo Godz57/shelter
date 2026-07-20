@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% load static %}
 
-{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | Your Shelter{% endblock %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -12,9 +12,18 @@
   <div id="site-name" class="shelter-admin-brand">
     <a href="{% url 'admin:index' %}">
       <span class="shelter-admin-mark">Your Shelter</span>
-      <span class="shelter-admin-sub">Admin</span>
+      <span class="shelter-admin-sub">Painel</span>
     </a>
   </div>
 {% endblock %}
 
-{% block nav-global %}{% endblock %}
+{% block nav-global %}
+  <nav class="shelter-top-nav" aria-label="Menu do painel">
+    <a href="{% url 'admin:index' %}">Início</a>
+    <a href="{% url 'admin:catalog_book_changelist' %}">Livros</a>
+    <a href="{% url 'admin:catalog_book_add' %}">Novo livro</a>
+    <a href="{% url 'admin:catalog_author_changelist' %}">Autores</a>
+    <a href="{% url 'admin:catalog_category_changelist' %}">Categorias</a>
+    <a href="/" target="_blank" rel="noopener">Ver site ↗</a>
+  </nav>
+{% endblock %}

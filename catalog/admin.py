@@ -1,82 +1,91 @@
 from django.contrib import admin
-from django.contrib.auth.admin import GroupAdmin, UserAdmin
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import User
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from .admin_site import shelter_admin_site
 from .models import Author, Book, Category, ReadingListItem
+from .slug_utils import unique_slug
+
+
+class SimpleModelAdmin(admin.ModelAdmin):
+    """Base: menos opções técnicas, mais clareza."""
+
+    save_on_top = True
+    list_per_page = 20
+    empty_value_display = "—"
+    show_full_result_count = True
 
 
 @admin.register(Author, site=shelter_admin_site)
-class AuthorAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "book_count", "created_at")
+class AuthorAdmin(SimpleModelAdmin):
+    list_display = ("name", "book_count", "created_at")
     list_display_links = ("name",)
     search_fields = ("name", "bio")
-    search_help_text = "Search by author name or bio text."
-    prepopulated_fields = {"slug": ("name",)}
+    search_help_text = "Digite o nome do autor para encontrar."
+    # slug escondido — gerado sozinho
+    exclude = ("slug",)
     readonly_fields = ("created_at",)
     ordering = ("name",)
-    list_per_page = 30
-    empty_value_display = "—"
     fieldsets = (
         (
-            "Who is this author?",
+            "Dados do autor",
             {
-                "description": "Name appears on book pages. The slug is used in the URL.",
-                "fields": ("name", "slug"),
+                "description": "Preencha o nome. A biografia é opcional.",
+                "fields": ("name", "bio"),
             },
         ),
         (
-            "About them",
+            "Informações do sistema",
             {
-                "description": "Optional short bio for the public author page.",
-                "fields": ("bio",),
-            },
-        ),
-        (
-            "System info",
-            {
-                "fields": ("created_at",),
                 "classes": ("collapse",),
+                "fields": ("created_at",),
             },
         ),
     )
 
-    @admin.display(description="Books in catalog")
+    @admin.display(description="Qtd. de livros")
     def book_count(self, obj: Author) -> int:
         return obj.books.count()
 
+    def save_model(self, request, obj, form, change):
+        obj.slug = unique_slug(Author, obj.name, instance=obj)
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(Category, site=shelter_admin_site)
-class CategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug", "book_count")
+class CategoryAdmin(SimpleModelAdmin):
+    list_display = ("name", "book_count")
     list_display_links = ("name",)
     search_fields = ("name",)
-    search_help_text = "Search categories by name."
-    prepopulated_fields = {"slug": ("name",)}
+    search_help_text = "Digite o nome da categoria."
+    exclude = ("slug",)
     ordering = ("name",)
-    empty_value_display = "—"
     fieldsets = (
         (
-            "Category",
+            "Categoria",
             {
                 "description": (
-                    "Categories group books on the public catalog "
-                    "(e.g. Theology, Devotional)."
+                    "Ex.: Teologia, Devocional, Biografia. "
+                    "Serve para filtrar livros no site."
                 ),
-                "fields": ("name", "slug"),
+                "fields": ("name",),
             },
         ),
     )
 
-    @admin.display(description="Books in catalog")
+    @admin.display(description="Qtd. de livros")
     def book_count(self, obj: Category) -> int:
         return obj.books.count()
 
+    def save_model(self, request, obj, form, change):
+        obj.slug = unique_slug(Category, obj.name, instance=obj)
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(Book, site=shelter_admin_site)
-class BookAdmin(admin.ModelAdmin):
+class BookAdmin(SimpleModelAdmin):
     list_display = (
         "cover_thumb",
         "title",
@@ -87,68 +96,61 @@ class BookAdmin(admin.ModelAdmin):
         "published_date",
     )
     list_display_links = ("title",)
-    list_filter = ("is_featured", "category", "published_date")
+    list_filter = ("is_featured", "category")
     list_editable = ("is_featured",)
-    search_fields = ("title", "subtitle", "description", "isbn", "authors__name")
-    search_help_text = "Search by title, subtitle, author name, or ISBN."
-    prepopulated_fields = {"slug": ("title",)}
+    search_fields = ("title", "subtitle", "description", "authors__name")
+    search_help_text = "Busque pelo título ou nome do autor."
     filter_horizontal = ("authors",)
     autocomplete_fields = ("category",)
-    date_hierarchy = "published_date"
+    exclude = ("slug",)
+    readonly_fields = ("created_at", "cover_preview", "view_on_site_link")
     ordering = ("-created_at",)
-    list_per_page = 20
-    list_max_show_all = 100
-    save_on_top = True
-    empty_value_display = "—"
-    actions = ("make_featured", "remove_featured", "clear_cover_urls")
-    readonly_fields = ("created_at", "cover_preview", "view_on_site_link", "how_it_works")
+    actions = ("make_featured", "remove_featured")
+    date_hierarchy = None  # calendário técnico confunde leigos
 
     fieldsets = (
         (
-            "1 · Basic info",
+            "Sobre o livro",
             {
-                "description": (
-                    "What readers see first. Slug becomes the URL "
-                    "(e.g. /books/grace-and-truth/)."
-                ),
+                "description": "Informações principais que o visitante vê no site.",
                 "fields": (
                     "title",
-                    "slug",
                     "subtitle",
                     "category",
                     "authors",
+                    "description",
                     "is_featured",
                 ),
             },
         ),
         (
-            "2 · Cover image",
+            "Capa do livro",
             {
                 "description": (
-                    "Paste a full image URL (https://…). "
-                    "Unsplash and similar CDNs work well. "
-                    "Leave empty for a simple letter placeholder."
+                    "Cole o endereço (link) de uma imagem na internet. "
+                    "Se deixar em branco, o site mostra só a inicial do título."
                 ),
                 "fields": ("cover_url", "cover_preview"),
             },
         ),
         (
-            "3 · Description & details",
+            "Detalhes opcionais",
             {
-                "description": "Description appears on the book detail page.",
-                "fields": ("description", "isbn", "published_date"),
+                "classes": ("collapse",),
+                "description": "Pode deixar em branco se não souber.",
+                "fields": ("isbn", "published_date"),
             },
         ),
         (
-            "Help & links",
+            "Depois de salvar",
             {
-                "fields": ("how_it_works", "view_on_site_link", "created_at"),
                 "classes": ("collapse",),
+                "fields": ("view_on_site_link", "created_at"),
             },
         ),
     )
 
-    @admin.display(description="Cover")
+    @admin.display(description="Capa")
     def cover_thumb(self, obj: Book) -> str:
         if obj.cover_url:
             return format_html(
@@ -157,81 +159,72 @@ class BookAdmin(admin.ModelAdmin):
             )
         initial = (obj.title[:1] or "?").upper()
         return format_html(
-            '<span class="shelter-cover-fallback" title="No cover URL">{}</span>',
+            '<span class="shelter-cover-fallback" title="Sem capa">{}</span>',
             initial,
         )
 
-    @admin.display(description="Cover?", boolean=True)
+    @admin.display(description="Tem capa?", boolean=True)
     def has_cover(self, obj: Book) -> bool:
         return bool(obj.cover_url)
 
-    @admin.display(description="Preview")
+    @admin.display(description="Prévia da capa")
     def cover_preview(self, obj: Book) -> str:
         if not obj.pk:
             return mark_safe(
-                '<p class="shelter-help-box">Save this book once, then reopen to preview the cover.</p>'
+                '<p class="shelter-help-box">'
+                "Salve o livro uma vez para ver a prévia da capa aqui."
+                "</p>"
             )
         if obj.cover_url:
             return format_html(
-                '<img src="{}" alt="Cover of {}" class="shelter-cover-preview" />'
-                '<p class="shelter-help-muted">Looks good? Readers see this on the public site.</p>',
+                '<img src="{}" alt="Capa de {}" class="shelter-cover-preview" />'
+                '<p class="shelter-help-muted">Assim a capa aparece no site.</p>',
                 obj.cover_url,
                 obj.title,
             )
         return mark_safe(
-            '<p class="shelter-help-box">No cover yet — the site will show a colored tile with the first letter.</p>'
+            '<p class="shelter-help-box">'
+            "Ainda sem capa — o site usa um quadrado colorido com a letra do título."
+            "</p>"
         )
 
-    @admin.display(description="Authors")
+    @admin.display(description="Autores")
     def author_list(self, obj: Book) -> str:
         names = list(obj.authors.values_list("name", flat=True)[:4])
         if not names:
-            return "— (add authors below)"
+            return "— (adicione autores)"
         text = ", ".join(names)
         extra = obj.authors.count() - len(names)
         if extra > 0:
             text = f"{text} +{extra}"
         return text
 
-    @admin.display(description="Public page")
+    @admin.display(description="Ver no site")
     def view_on_site_link(self, obj: Book) -> str:
         if not obj.pk:
-            return "Save first to open the public page."
+            return "Salve o livro primeiro."
         return format_html(
             '<a class="shelter-btn-link" href="{}" target="_blank" rel="noopener">'
-            "Open this book on the site ↗</a>",
+            "Abrir este livro no site ↗</a>",
             obj.get_absolute_url(),
         )
 
-    @admin.display(description="Quick guide")
-    def how_it_works(self, obj: Book) -> str:
-        return mark_safe(
-            '<ol class="shelter-howto">'
-            "<li>Fill title, category, and at least one author.</li>"
-            "<li>Paste a cover URL if you have one.</li>"
-            "<li>Write a short description readers will understand.</li>"
-            "<li>Tick <strong>Featured</strong> to show it on the home page.</li>"
-            "<li>Click <strong>Save</strong>, then use “Open on the site” to check.</li>"
-            "</ol>"
-        )
-
-    @admin.action(description="Mark selected as Featured (home page)")
+    @admin.action(description="Marcar como destaque na página inicial")
     def make_featured(self, request, queryset):
-        updated = queryset.update(is_featured=True)
+        n = queryset.update(is_featured=True)
         self.message_user(
             request,
-            f"{updated} book(s) are now featured on the home page.",
+            f"{n} livro(s) agora aparecem em destaque na página inicial.",
         )
 
-    @admin.action(description="Remove Featured from selected")
+    @admin.action(description="Tirar do destaque da página inicial")
     def remove_featured(self, request, queryset):
-        updated = queryset.update(is_featured=False)
-        self.message_user(request, f"Featured removed from {updated} book(s).")
+        n = queryset.update(is_featured=False)
+        self.message_user(request, f"Destaque removido de {n} livro(s).")
 
-    @admin.action(description="Clear cover URLs from selected")
-    def clear_cover_urls(self, request, queryset):
-        updated = queryset.update(cover_url="")
-        self.message_user(request, f"Cover URL cleared on {updated} book(s).")
+    def save_model(self, request, obj, form, change):
+        obj.slug = unique_slug(Book, obj.title, instance=obj)
+        super().save_model(request, obj, form, change)
 
     def get_queryset(self, request):
         return (
@@ -243,43 +236,41 @@ class BookAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        extra_context["title"] = "Books — catalog"
+        extra_context["title"] = "Livros"
         extra_context["shelter_list_hint"] = (
-            "Tip: tick Featured in the list and click Save, "
-            "or use the Actions menu for bulk changes."
+            "Dica: marque “Destaque na página inicial” na lista e clique em Salvar. "
+            "Ou selecione vários livros e use a caixa Ação."
         )
         return super().changelist_view(request, extra_context=extra_context)
 
 
 @admin.register(ReadingListItem, site=shelter_admin_site)
-class ReadingListItemAdmin(admin.ModelAdmin):
+class ReadingListItemAdmin(SimpleModelAdmin):
     list_display = ("user", "book", "notes_short", "created_at")
-    list_filter = ("created_at",)
-    search_fields = ("user__username", "user__email", "book__title", "notes")
-    search_help_text = "Search by username or book title."
+    list_filter = ()
+    search_fields = ("user__username", "book__title")
+    search_help_text = "Busque pelo nome do leitor ou do livro."
     autocomplete_fields = ("user", "book")
     readonly_fields = ("created_at",)
-    date_hierarchy = "created_at"
     ordering = ("-created_at",)
-    empty_value_display = "—"
     fieldsets = (
         (
-            "Saved book",
+            "Livro salvo pelo leitor",
             {
                 "description": (
-                    "These are books readers added to Your Shelter "
-                    "(their personal reading list)."
+                    "Aqui ficam os livros que as pessoas colocaram no Your Shelter "
+                    "(lista de leitura delas)."
                 ),
                 "fields": ("user", "book", "notes"),
             },
         ),
         (
-            "When",
-            {"fields": ("created_at",), "classes": ("collapse",)},
+            "Quando foi salvo",
+            {"classes": ("collapse",), "fields": ("created_at",)},
         ),
     )
 
-    @admin.display(description="Notes")
+    @admin.display(description="Observação")
     def notes_short(self, obj: ReadingListItem) -> str:
         if not obj.notes:
             return "—"
@@ -293,6 +284,53 @@ class ReadingListItemAdmin(admin.ModelAdmin):
         )
 
 
-# Auth models on the same friendly admin site
-shelter_admin_site.register(User, UserAdmin)
-shelter_admin_site.register(Group, GroupAdmin)
+class SimpleUserAdmin(DjangoUserAdmin):
+    """Usuários sem jargão de permissões avançadas na cara."""
+
+    list_display = ("username", "email", "is_staff", "is_active", "last_login")
+    list_filter = ("is_staff", "is_active")
+    search_fields = ("username", "email", "first_name", "last_name")
+    ordering = ("username",)
+    filter_horizontal = ()
+    # Menos telas técnicas
+    fieldsets = (
+        (
+            "Conta",
+            {
+                "description": "Dados de quem pode entrar no painel ou no site.",
+                "fields": ("username", "password"),
+            },
+        ),
+        (
+            "Nome e e-mail",
+            {"fields": ("first_name", "last_name", "email")},
+        ),
+        (
+            "Acesso",
+            {
+                "description": (
+                    "“Equipe” libera o painel de administração. "
+                    "Só marque se a pessoa deve gerenciar o catálogo."
+                ),
+                "fields": ("is_active", "is_staff", "is_superuser"),
+            },
+        ),
+        (
+            "Datas",
+            {"classes": ("collapse",), "fields": ("last_login", "date_joined")},
+        ),
+    )
+    add_fieldsets = (
+        (
+            "Nova conta",
+            {
+                "classes": ("wide",),
+                "description": "Crie um usuário. Se for da equipe, marque “Equipe” depois de salvar.",
+                "fields": ("username", "password1", "password2"),
+            },
+        ),
+    )
+
+
+# Só usuários — sem “Groups” (muito técnico para leigos)
+shelter_admin_site.register(User, SimpleUserAdmin)

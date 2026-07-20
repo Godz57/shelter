@@ -4,19 +4,19 @@ from django.urls import reverse
 
 
 class Author(models.Model):
-    name = models.CharField("display name", max_length=200)
-    slug = models.SlugField(
-        "URL slug",
-        unique=True,
-        help_text="Used in the author page URL. Auto-filled from the name.",
+    name = models.CharField("nome", max_length=200)
+    slug = models.SlugField(unique=True)
+    bio = models.TextField(
+        "biografia (opcional)",
+        blank=True,
+        help_text="Texto curto sobre o autor, se quiser.",
     )
-    bio = models.TextField("short bio", blank=True, help_text="Optional. Shown on the author page.")
-    created_at = models.DateTimeField("created", auto_now_add=True)
+    created_at = models.DateTimeField("criado em", auto_now_add=True)
 
     class Meta:
         ordering = ["name"]
-        verbose_name = "author"
-        verbose_name_plural = "authors"
+        verbose_name = "autor"
+        verbose_name_plural = "autores"
 
     def __str__(self) -> str:
         return self.name
@@ -26,70 +26,62 @@ class Author(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField("name", max_length=100)
-    slug = models.SlugField(
-        "URL slug",
-        unique=True,
-        help_text="Used in filters and URLs. Auto-filled from the name.",
-    )
+    name = models.CharField("nome", max_length=100)
+    slug = models.SlugField(unique=True)
 
     class Meta:
         ordering = ["name"]
-        verbose_name = "category"
-        verbose_name_plural = "categories"
+        verbose_name = "categoria"
+        verbose_name_plural = "categorias"
 
     def __str__(self) -> str:
         return self.name
 
 
 class Book(models.Model):
-    title = models.CharField("title", max_length=255)
-    slug = models.SlugField(
-        "URL slug",
-        unique=True,
-        help_text="Auto-filled from the title. Appears in /books/your-slug/.",
-    )
-    subtitle = models.CharField("subtitle", max_length=255, blank=True)
+    title = models.CharField("título", max_length=255)
+    slug = models.SlugField(unique=True)
+    subtitle = models.CharField("subtítulo (opcional)", max_length=255, blank=True)
     description = models.TextField(
-        "description",
-        help_text="Main blurb on the book page. Keep it clear for readers.",
+        "descrição",
+        help_text="Resumo do livro para o visitante. Escreva de forma simples.",
     )
-    isbn = models.CharField("ISBN", max_length=20, blank=True)
+    isbn = models.CharField("ISBN (opcional)", max_length=20, blank=True)
     published_date = models.DateField(
-        "publication date",
+        "data de publicação (opcional)",
         null=True,
         blank=True,
-        help_text="Optional. Format: YYYY-MM-DD.",
+        help_text="Se souber, use o formato AAAA-MM-DD (ex.: 2024-05-10).",
     )
     cover_url = models.URLField(
-        "cover image URL",
+        "link da capa (opcional)",
         blank=True,
-        help_text="Full https:// link to a cover image (Unsplash, CDN, etc.).",
+        help_text="Cole o link completo da imagem (começa com https://).",
     )
     is_featured = models.BooleanField(
-        "featured on home page",
+        "destaque na página inicial",
         default=False,
-        help_text="Turn on to show this book in the Featured section of the home page.",
+        help_text="Marque para o livro aparecer em destaque na home do site.",
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.PROTECT,
         related_name="books",
-        verbose_name="category",
+        verbose_name="categoria",
     )
     authors = models.ManyToManyField(
         Author,
         related_name="books",
         blank=True,
-        verbose_name="authors",
-        help_text="Hold Ctrl (Windows) or Cmd (Mac) to select more than one.",
+        verbose_name="autores",
+        help_text="Escolha um ou mais autores na lista ao lado.",
     )
-    created_at = models.DateTimeField("created", auto_now_add=True)
+    created_at = models.DateTimeField("criado em", auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "book"
-        verbose_name_plural = "books"
+        verbose_name = "livro"
+        verbose_name_plural = "livros"
 
     def __str__(self) -> str:
         return self.title
@@ -103,26 +95,25 @@ class ReadingListItem(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="reading_list",
-        verbose_name="reader",
+        verbose_name="leitor",
     )
     book = models.ForeignKey(
         Book,
         on_delete=models.CASCADE,
         related_name="on_shelves",
-        verbose_name="book",
+        verbose_name="livro",
     )
     notes = models.CharField(
-        "private note",
+        "observação (opcional)",
         max_length=255,
         blank=True,
-        help_text="Optional note from or about this saved book.",
     )
-    created_at = models.DateTimeField("saved on", auto_now_add=True)
+    created_at = models.DateTimeField("salvo em", auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
-        verbose_name = "saved book"
-        verbose_name_plural = "saved books"
+        verbose_name = "livro salvo"
+        verbose_name_plural = "livros salvos pelos leitores"
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "book"], name="unique_user_book_shelf"

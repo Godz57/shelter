@@ -426,3 +426,138 @@ a:hover {
 #content-main .module caption {
   border-radius: 8px 8px 0 0;
 }
+
+/* —— Painel para leigos: sem sidebar dev —— */
+#nav-sidebar,
+.toggle-nav-sidebar,
+#toggle-nav-sidebar,
+.sticky[aria-label="Sidebar"] {
+  display: none !important;
+}
+
+#main,
+.main {
+  margin-left: 0 !important;
+}
+
+/* Menu horizontal simples no topo */
+.shelter-top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  align-items: center;
+  margin-left: 1rem;
+  flex: 1;
+}
+
+.shelter-top-nav a {
+  color: #fff !important;
+  text-decoration: none !important;
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.shelter-top-nav a:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff !important;
+}
+
+#header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+#branding {
+  flex-shrink: 0;
+}
+
+/* Cards do menu principal */
+.shelter-menu-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.shelter-quick-card.is-primary {
+  border-color: var(--shelter-sage);
+  background: linear-gradient(160deg, #fff 0%, var(--shelter-soft) 100%);
+}
+
+.shelter-card-cta {
+  margin-top: 0.55rem;
+  font-style: normal;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--shelter-teal-mid);
+}
+
+.shelter-steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  line-height: 1.55;
+}
+
+.shelter-steps li {
+  margin: 0.4rem 0;
+}
+
+.shelter-home-note {
+  color: #5b675f;
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0;
+}
+
+/* Esconde “Recent actions” residual e breadcrumbs técnicos demais em home */
+body.shelter-home #content-related,
+body.dashboard #content-related {
+  display: none !important;
+}
+
+body.shelter-home #content {
+  width: 100% !important;
+}
+
+/* Formulários: botões maiores */
+.submit-row input,
+.submit-row a.button,
+.submit-row input[type="submit"] {
+  font-size: 0.95rem !important;
+  padding: 0.55rem 1.1rem !important;
+  border-radius: 10px !important;
+}
+
+/* Lista: menos “cara de sistema” */
+#changelist-filter {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid var(--shelter-line);
+}
+
+#changelist .actions label {
+  font-weight: 600;
+}
+
+.object-tools {
+  margin-bottom: 0.75rem;
+}
+
+/* User tools em PT-friendly spacing */
+#user-tools {
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .shelter-top-nav {
+    margin-left: 0;
+    width: 100%;
+    order: 3;
+  }
+
+  #header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

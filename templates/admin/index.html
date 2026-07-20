@@ -1,76 +1,87 @@
-{% extends "admin/index.html" %}
+{% extends "admin/base_site.html" %}
 {% load i18n static %}
+
+{% block coltype %}colM{% endblock %}
+{% block bodyclass %}{{ block.super }} dashboard shelter-home{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
 
 {% block content %}
 <div class="shelter-dashboard">
   <section class="shelter-welcome">
     <div>
-      <p class="shelter-eyebrow">Your Shelter · staff panel</p>
-      <h1>Hi{% if user.first_name %}, {{ user.first_name }}{% elif user.username %}, {{ user.username }}{% endif %} 👋</h1>
+      <p class="shelter-eyebrow">Painel Your Shelter</p>
+      <h1>Olá{% if user.first_name %}, {{ user.first_name }}{% elif user.username %}, {{ user.username }}{% endif %} 👋</h1>
       <p class="shelter-welcome-text">
-        Manage the catalog people see on the public site.
-        Prefer a simple path: <strong>Category → Author → Book</strong>.
+        Aqui você cuida dos <strong>livros</strong> que aparecem no site.
+        Não precisa saber de programação — use os botões abaixo.
       </p>
     </div>
-    <a class="shelter-primary-cta" href="{% url 'admin:catalog_book_add' %}">+ Add a book</a>
+    <a class="shelter-primary-cta" href="{% url 'admin:catalog_book_add' %}">+ Cadastrar livro</a>
   </section>
 
   {% if shelter_stats %}
-  <section class="shelter-stats" aria-label="Catalog snapshot">
+  <section class="shelter-stats" aria-label="Resumo">
     <div class="shelter-stat">
       <span class="shelter-stat-num">{{ shelter_stats.books }}</span>
-      <span class="shelter-stat-label">Books</span>
+      <span class="shelter-stat-label">Livros</span>
     </div>
     <div class="shelter-stat">
       <span class="shelter-stat-num">{{ shelter_stats.featured }}</span>
-      <span class="shelter-stat-label">Featured</span>
+      <span class="shelter-stat-label">Em destaque</span>
     </div>
     <div class="shelter-stat">
       <span class="shelter-stat-num">{{ shelter_stats.authors }}</span>
-      <span class="shelter-stat-label">Authors</span>
+      <span class="shelter-stat-label">Autores</span>
     </div>
     <div class="shelter-stat">
       <span class="shelter-stat-num">{{ shelter_stats.categories }}</span>
-      <span class="shelter-stat-label">Categories</span>
+      <span class="shelter-stat-label">Categorias</span>
     </div>
     <div class="shelter-stat">
       <span class="shelter-stat-num">{{ shelter_stats.saved }}</span>
-      <span class="shelter-stat-label">Saved by readers</span>
+      <span class="shelter-stat-label">Salvos pelos leitores</span>
     </div>
     <div class="shelter-stat {% if shelter_stats.missing_covers %}is-warn{% endif %}">
       <span class="shelter-stat-num">{{ shelter_stats.missing_covers }}</span>
-      <span class="shelter-stat-label">Missing covers</span>
+      <span class="shelter-stat-label">Sem capa</span>
     </div>
   </section>
   {% endif %}
 
-  {% if shelter_quick_links %}
-  <section class="shelter-quick" aria-label="Quick actions">
-    <h2>Quick actions</h2>
-    <div class="shelter-quick-grid">
-      {% for link in shelter_quick_links %}
-        <a class="shelter-quick-card icon-{{ link.icon }}"
-           href="{{ link.url }}"
-           {% if link.external %}target="_blank" rel="noopener"{% endif %}>
-          <strong>{{ link.label }}</strong>
-          <span>{{ link.hint }}</span>
+  {% if shelter_menu %}
+  <section class="shelter-quick" aria-label="Menu principal">
+    <h2>O que você quer fazer?</h2>
+    <div class="shelter-quick-grid shelter-menu-grid">
+      {% for item in shelter_menu %}
+        <a class="shelter-quick-card {% if item.primary %}is-primary{% endif %} icon-{{ item.icon }}"
+           href="{{ item.url }}"
+           {% if item.external %}target="_blank" rel="noopener"{% endif %}>
+          <strong>{{ item.label }}</strong>
+          <span>{{ item.hint }}</span>
+          <em class="shelter-card-cta">{{ item.cta }} →</em>
         </a>
       {% endfor %}
     </div>
   </section>
   {% endif %}
 
-  {% if shelter_tips %}
-  <section class="shelter-tips" aria-label="Tips">
-    <h2>Friendly tips</h2>
-    <ul>
-      {% for tip in shelter_tips %}
-        <li>{{ tip }}</li>
+  {% if shelter_steps %}
+  <section class="shelter-tips" aria-label="Passo a passo">
+    <h2>Como cadastrar um livro (passo a passo)</h2>
+    <ol class="shelter-steps">
+      {% for step in shelter_steps %}
+        <li>{{ step }}</li>
       {% endfor %}
-    </ul>
+    </ol>
   </section>
   {% endif %}
-</div>
 
-{{ block.super }}
+  <p class="shelter-home-note">
+    Precisa de ajuda? Peça para alguém da equipe técnica —
+    este painel foi feito para uso do dia a dia, sem código.
+  </p>
+</div>
 {% endblock %}
+
+{% block sidebar %}{% endblock %}
