@@ -7,19 +7,35 @@ import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
+# Vercel CLI `vercel pull` writes here for local use
+load_dotenv(".env.local", override=False)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Vercel sets VERCEL=1 on the platform
+ON_VERCEL = bool(os.environ.get("VERCEL"))
 
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "dev-insecure-change-me-before-production",
 )
-DEBUG = os.environ.get("DJANGO_DEBUG", "1") == "1"
+if ON_VERCEL and SECRET_KEY == "dev-insecure-change-me-before-production":
+    raise RuntimeError("Set DJANGO_SECRET_KEY in Vercel project environment variables.")
+
+DEBUG = os.environ.get("DJANGO_DEBUG", "0" if ON_VERCEL else "1") == "1"
+
 ALLOWED_HOSTS = [
     h.strip()
     for h in os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
     if h.strip()
 ]
+# Automatic hosts from Vercel deployment URLs
+for env_key in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL"):
+    host = (os.environ.get(env_key) or "").strip()
+    if host and host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
+if ON_VERCEL and ".vercel.app" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(".vercel.app")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -64,10 +80,21 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASE_URL = os.environ.get("DATABASE_URL", "").strip()
 if DATABASE_URL:
+    # Serverless: no persistent connections between invocations
+    conn_max_age = 0 if ON_VERCEL else 600
     DATABASES = {
-        "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=conn_max_age,
+            ssl_require=ON_VERCEL,
+        )
     }
 else:
+    if ON_VERCEL:
+        raise RuntimeError(
+            "DATABASE_URL is required on Vercel. "
+            "Add a Postgres store (e.g. Neon) and set DATABASE_URL."
+        )
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
@@ -118,12 +145,19 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 12,
 }
 
-if not DEBUG:
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
+for env_key in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL"):
+    host = (os.environ.get(env_key) or "").strip()
+    if host:
+        origin = host if host.startswith("http") else f"https://{host}"
+        if origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(origin)
+
+if not DEBUG or ON_VERCEL:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    CSRF_TRUSTED_ORIGINS = [
-        o.strip()
-        for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
-        if o.strip()
-    ]

@@ -70,36 +70,44 @@ templates/       # base + catalog + registration templates
 static/css/      # site styles
 ```
 
-## Deploy (Render / Railway)
+## Deploy (Vercel)
 
-1. Push this repo to GitHub.
-2. Create a web service + PostgreSQL database.
-3. Set environment variables:
+Django is detected via `manage.py`. Static files are collected automatically; `build.py` runs migrations + seed.
 
-| Variable | Example |
-|----------|---------|
+### 1. Postgres (required)
+
+Vercel has no durable disk — use **Neon**, **Vercel Postgres**, or **Supabase**. Copy the connection string as `DATABASE_URL`.
+
+### 2. Environment variables (Vercel project)
+
+| Variable | Value |
+|----------|--------|
 | `DJANGO_SECRET_KEY` | long random string |
 | `DJANGO_DEBUG` | `0` |
-| `DJANGO_ALLOWED_HOSTS` | `your-app.onrender.com` |
-| `CSRF_TRUSTED_ORIGINS` | `https://your-app.onrender.com` |
-| `DATABASE_URL` | from the provider |
+| `DATABASE_URL` | `postgres://…` |
+| `DJANGO_SUPERUSER_USERNAME` | `admin` (optional, default `admin`) |
+| `DJANGO_SUPERUSER_PASSWORD` | set a real password in production |
 
-4. Build command:
+`VERCEL_URL` / hosts are handled in settings for `.vercel.app`.
 
-```bash
-pip install -r requirements.txt && python manage.py collectstatic --noinput
-```
-
-5. Release / start:
+### 3. CLI
 
 ```bash
-python manage.py migrate && python manage.py seed_catalog
-gunicorn config.wsgi --log-file -
+npm i -g vercel
+cd shelf
+vercel link
+vercel env add DJANGO_SECRET_KEY
+vercel env add DATABASE_URL
+vercel env add DJANGO_DEBUG
+vercel --prod
 ```
 
-(Or use the included `Procfile` for the web process.)
+Or connect the GitHub repo `Godz57/shelf` in the Vercel dashboard (root = repo root).
 
-6. Create a superuser with a one-off shell: `python manage.py createsuperuser`
+### 4. After deploy
+
+- Public site: `https://<project>.vercel.app/`
+- Staff login: same **Log in** → user `admin` (lands on `/manage/`)
 
 ## Why this project
 

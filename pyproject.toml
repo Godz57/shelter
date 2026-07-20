@@ -1,0 +1,7 @@
+[tool.vercel]
+# Explicit WSGI entry (also auto-detected via manage.py / WSGI_APPLICATION)
+entrypoint = "config.wsgi:application"
+
+[tool.vercel.scripts]
+# Runs after pip install; Vercel also runs collectstatic automatically
+build = "python build.py"
