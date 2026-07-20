@@ -1,23 +1,24 @@
 /* Shelter — design inspired by soft sage gradient blog templates */
 
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap");
 
 :root {
   --bg: #f7f4ef;
   --bg-soft: #f3efe8;
   --surface: #ffffff;
   --surface-warm: #faf6f0;
-  --ink: #2a3330;
-  --muted: #6b756f;
+  /* Darker ink/muted = better contrast without changing typefaces */
+  --ink: #1a221f;
+  --muted: #4f5a55;
   --line: #e4ddd2;
   --sage: #9fb8a8;
   --mint: #c5ddd0;
   --mint-deep: #a8c9b8;
-  --teal: #1e4d42;
-  --teal-mid: #2d6a5a;
+  --teal: #163d35;
+  --teal-mid: #245a4c;
   --teal-soft: #e8f2ed;
   --blush: #d4b5a8;
-  --ok: #1f5c3a;
+  --ok: #1a5234;
   --radius: 14px;
   --radius-sm: 10px;
   --radius-pill: 999px;
@@ -26,6 +27,11 @@
   --font: "Source Sans 3", system-ui, -apple-system, sans-serif;
   --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --header-h: 4.25rem;
+  /* Readable type scale (same families) */
+  --text-body: 1.0625rem;
+  --text-meta: 0.98rem;
+  --leading-body: 1.72;
+  --leading-display: 1.22;
 }
 
 *,
@@ -44,6 +50,8 @@ body {
   display: flex;
   flex-direction: column;
   font-family: var(--font);
+  font-size: var(--text-body);
+  font-weight: 500;
   color: var(--ink);
   /* Morning light / open window + soft sage field */
   background:
@@ -65,9 +73,42 @@ body {
     radial-gradient(900px 400px at 100% 0%, rgba(212, 181, 168, 0.28), transparent 50%),
     radial-gradient(700px 380px at 50% 100%, rgba(232, 242, 237, 0.7), transparent 60%),
     var(--bg);
-  line-height: 1.6;
+  line-height: var(--leading-body);
+  /* Slightly stronger glyph edges for body on cream bg */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   position: relative;
+}
+
+/* Display headings: same font, clearer weight + tracking */
+h1,
+h2,
+h3,
+.page-header h1,
+.section-head h2,
+.book-card h2,
+.book-card h3,
+.book-detail h1,
+.author-detail h1,
+.about-card h2,
+.empty-state-title {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: var(--leading-display);
+  color: var(--teal);
+}
+
+p {
+  margin-block: 0.65em;
+}
+
+p:first-child {
+  margin-top: 0;
+}
+
+p:last-child {
+  margin-bottom: 0;
 }
 
 /* Keep chrome above ambient vines (mobile wallpaper + desktop sides) */
@@ -543,8 +584,8 @@ img {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem 1.1rem;
-  font-size: 0.95rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .nav a {
@@ -593,13 +634,13 @@ img {
 }
 
 .page-header h1 {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.45rem;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(2rem, 4vw, 2.6rem);
+  font-weight: 700;
+  font-size: clamp(2.05rem, 4.2vw, 2.7rem);
   color: var(--teal);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: 0.005em;
+  line-height: var(--leading-display);
 }
 
 .section-head {
@@ -661,30 +702,36 @@ img {
   display: inline-block;
   margin: 0 0 0.75rem;
   padding: 0.28rem 0.75rem;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: var(--radius-pill);
+  text-shadow: 0 1px 1px rgba(12, 32, 28, 0.15);
 }
 
 .hero h1 {
   margin: 0 0 0.75rem;
   font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(2.1rem, 5vw, 3rem);
-  line-height: 1.12;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  font-size: clamp(2.15rem, 5vw, 3.05rem);
+  line-height: 1.18;
+  letter-spacing: 0.01em;
   color: #fff;
+  text-shadow: 0 1px 2px rgba(12, 32, 28, 0.28);
 }
 
 .hero .lede {
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.96);
   max-width: 32rem;
   margin: 0 0 1.35rem;
-  font-size: 1.05rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 1.7;
+  text-shadow: 0 1px 2px rgba(12, 32, 28, 0.2);
 }
 
 .hero-actions {
@@ -881,13 +928,21 @@ img {
 }
 
 .book-card h2,
+.book-card h2,
 .book-card h3 {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.25;
+  font-size: 1.32rem;
+  font-weight: 700;
+  line-height: 1.28;
+  letter-spacing: 0.01em;
   color: var(--ink);
+}
+
+.book-card .meta {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .book-card a.card-link {
@@ -929,19 +984,26 @@ img {
 .hint,
 .help {
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: var(--text-meta);
+  font-weight: 500;
   margin: 0;
 }
 
 .subtitle {
   font-style: italic;
   font-family: var(--font-display);
-  font-size: 1.05rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #3d4a45;
+  letter-spacing: 0.015em;
 }
 
 .lede {
   color: var(--muted);
   max-width: 40rem;
+  font-size: 1.08rem;
+  font-weight: 500;
+  line-height: 1.7;
 }
 
 /* ——— Filters ——— */
@@ -1109,11 +1171,20 @@ img {
   margin: 1.25rem 0;
   max-width: 42rem;
   color: var(--ink);
+  font-size: 1.08rem;
+  font-weight: 500;
+  line-height: 1.78;
+}
+
+.book-detail .description p,
+.author-detail .description p {
+  margin-bottom: 0.9em;
 }
 
 .breadcrumb {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   margin: 0 0 1rem;
 }
 
@@ -1533,9 +1604,11 @@ code {
     radial-gradient(ellipse 80% 120% at 10% 120%, rgba(197, 221, 208, 0.14), transparent 55%),
     radial-gradient(ellipse 70% 100% at 90% -20%, rgba(255, 255, 255, 0.08), transparent 50%),
     var(--teal);
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.92);
   padding: 2.35rem 0 2.5rem;
-  font-size: 0.92rem;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.65;
   position: relative;
   overflow: hidden;
 }
@@ -1758,8 +1831,9 @@ code {
 }
 
 .footer-meta {
-  font-size: 0.85rem;
-  opacity: 0.85;
+  font-size: 0.92rem;
+  opacity: 0.9;
+  font-weight: 500;
 }
 
 /* ——— Responsive ——— */
@@ -2507,9 +2581,10 @@ html.reading-mode .book-detail h1 {
 }
 
 html.reading-mode .description {
-  font-size: 1.15rem;
-  line-height: 1.85;
+  font-size: 1.2rem;
+  line-height: 1.88;
   max-width: 36rem;
+  font-weight: 500;
 }
 
 html.reading-mode .detail-layout {
